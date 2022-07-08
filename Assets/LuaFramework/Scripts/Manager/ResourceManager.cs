@@ -21,11 +21,11 @@ namespace LuaFramework {
 
     public class ResourceManager : Manager {
         string m_BaseDownloadingURL = "";
-        string[] m_AllManifest = null;
-        AssetBundleManifest m_AssetBundleManifest = null;
+        string[] m_AllManifest = null;  // 这个可能是用来存放所有的即将调用到的资源？即 一共打了多少个 .unity3d的assetbundel包文件；
+        AssetBundleManifest m_AssetBundleManifest = null; // 主配置包的文件
         Dictionary<string, string[]> m_Dependencies = new Dictionary<string, string[]>();
         Dictionary<string, AssetBundleInfo> m_LoadedAssetBundles = new Dictionary<string, AssetBundleInfo>();
-        Dictionary<string, List<LoadAssetRequest>> m_LoadRequests = new Dictionary<string, List<LoadAssetRequest>>();
+        Dictionary<string, List<LoadAssetRequest>> m_LoadRequests = new Dictionary<string, List<LoadAssetRequest>>(); // 已加载的资源管理队列 字典
 
         class LoadAssetRequest {
             public Type assetType;
@@ -34,9 +34,9 @@ namespace LuaFramework {
             public Action<UObject[]> sharpFunc;
         }
 
-        // Load AssetBundleManifest.
+        // Load AssetBundleManifest.  加载资源的主配置表
         public void Initialize(string manifestName, Action initOK) {
-            m_BaseDownloadingURL = Util.GetRelativePath();
+            m_BaseDownloadingURL = Util.GetRelativePath(); // streamingAssetsPath
             LoadAsset<AssetBundleManifest>(manifestName, new string[] { "AssetBundleManifest" }, delegate(UObject[] objs) {
                 if (objs.Length > 0) {
                     m_AssetBundleManifest = objs[0] as AssetBundleManifest;

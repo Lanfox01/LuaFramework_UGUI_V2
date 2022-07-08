@@ -21,7 +21,7 @@ public class StartUpCommand : ControllerCommand {
         AppFacade.Instance.AddManager<SoundManager>(ManagerName.Sound);
         AppFacade.Instance.AddManager<TimerManager>(ManagerName.Timer);
         AppFacade.Instance.AddManager<NetworkManager>(ManagerName.Network);
-        AppFacade.Instance.AddManager<ResourceManager>(ManagerName.Resource);
+        AppFacade.Instance.AddManager<ResourceManager>(ManagerName.Resource); // 负责 资源的管理 加载 释放 主要是 控制assetbundle 来管理内存； 这可能是优化重点；里面很多方法和逻辑没看懂
         AppFacade.Instance.AddManager<ThreadManager>(ManagerName.Thread);
         AppFacade.Instance.AddManager<ObjectPoolManager>(ManagerName.ObjectPool);
         AppFacade.Instance.AddManager<GameManager>(ManagerName.Game); // 推荐这个模块放到最后； 毕竟这个是游戏逻辑管理的入口 模块；

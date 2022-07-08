@@ -19,7 +19,7 @@ namespace LuaFramework {
             DelegateFactory.Init();
             LuaCoroutine.Register(lua, this);
         }
-
+//如果到下面这一列代码如果有上面报错，那说明lua虚拟没有启动成功，或者一些wrap  binder 等文件没弄清楚；
         public void InitStart() {
             InitLuaPath();
             InitLuaBundle();

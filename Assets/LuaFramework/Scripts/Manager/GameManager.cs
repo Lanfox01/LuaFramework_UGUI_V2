@@ -29,7 +29,7 @@ namespace LuaFramework {
             DontDestroyOnLoad(gameObject);  //防止销毁自己
 
             CheckExtractResource(); //释放资源
-            Screen.sleepTimeout = SleepTimeout.NeverSleep;
+            Screen.sleepTimeout = SleepTimeout.NeverSleep; // 更新的时候不让屏幕休眠
             Application.targetFrameRate = AppConst.GameFrameRate;
         }
 
@@ -56,8 +56,8 @@ namespace LuaFramework {
             if (Directory.Exists(dataPath)) Directory.Delete(dataPath, true);
             Directory.CreateDirectory(dataPath);
 
-            string infile = resPath + "files.txt";
-            string outfile = dataPath + "files.txt";
+            string infile = resPath + "files.txt";   // 源数据地址
+            string outfile = dataPath + "files.txt"; // 目标地址
             if (File.Exists(outfile)) File.Delete(outfile);
 
             string message = "正在解包文件:>files.txt";
@@ -83,8 +83,8 @@ namespace LuaFramework {
 
                 message = "正在解包文件:>" + fs[0];
                 Debug.Log("正在解包文件:>" + infile);
-                facade.SendMessageCommand(NotiConst.UPDATE_MESSAGE, message);
-
+                facade.SendMessageCommand(NotiConst.UPDATE_MESSAGE, message); // 解压或者拷贝一个文件就发送一个命令消息  可以作为加载进度条 但是这个命令好像一开始没有注册 
+                                                                            // 为什么不写成 AppFacade.Instance.SendMessageCommand(NotiConst.UPDATE_MESSAGE, message); 因为他们的本质集成源头是一样的 所以属于框架内 走变量，不走属性；
                 string dir = Path.GetDirectoryName(outfile);
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
@@ -104,12 +104,12 @@ namespace LuaFramework {
                 }
                 yield return new WaitForEndOfFrame();
             }
-            message = "解包完成!!!";
+            message = "解包完成!!!"; // 上面这么多数据如果中途出现数据错误怎么办？
             facade.SendMessageCommand(NotiConst.UPDATE_MESSAGE, message);
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.1f); //全部解压之后为什么要等 0.1 秒？
 
             message = string.Empty;
-            //释放完成，开始启动更新资源
+            //释放完成，开始启动更新资源 ； 因为有可能下载的安装包不是最新的，随意必须得再走一遍更新流程
             StartCoroutine(OnUpdateResource());
         }
 
@@ -226,7 +226,7 @@ namespace LuaFramework {
         /// 资源初始化结束
         /// </summary>
         public void OnResourceInited() {
-#if ASYNC_MODE
+#if ASYNC_MODE //如果是异步模式？
             ResManager.Initialize(AppConst.AssetDir, delegate() {
                 Debug.Log("Initialize OK!!!");
                 this.OnInitialize();
@@ -236,11 +236,14 @@ namespace LuaFramework {
             this.OnInitialize();
 #endif
         }
-
+ /// <summary>
+ ///  资源都准备完毕之后，开始 业务逻辑也就是Lua 热更这块了
+ ///  // 如果前面对框架使用都没任何问题， 真正的游戏主逻辑结构是写到这里的
+ /// </summary>
         void OnInitialize() {
-            LuaManager.InitStart();
+            LuaManager.InitStart(); //lua 虚拟机完美启动
             LuaManager.DoFile("Logic/Game");         //加载游戏
-            LuaManager.DoFile("Logic/Network");      //加载网络
+            LuaManager.DoFile("Logic/Network");      //加载网络  网络的使用初始化交到Lua端控制？
             NetManager.OnInit();                     //初始化网络
             Util.CallMethod("Game", "OnInitOK");     //初始化完成
 
