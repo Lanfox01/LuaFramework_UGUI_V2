@@ -12,6 +12,9 @@ public enum DisType {
     Disconnect,
 }
 
+/// <summary>
+///  核心是 TcpClient ；本类是 通信的流处理的底层； 注意学习
+/// </summary>
 public class SocketClient {
     private TcpClient client = null;
     private NetworkStream outStream = null;

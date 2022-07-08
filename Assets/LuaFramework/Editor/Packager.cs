@@ -6,6 +6,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using LuaFramework;
+using Debug = UnityEngine.Debug;
+
+/// <summary>
+///  这个是一个核心的打包 工具 封装；
+/// </summary>
 
 public class Packager {
     public static string platform = string.Empty;
@@ -51,17 +56,17 @@ public class Packager {
     /// </summary>
     public static void BuildAssetResource(BuildTarget target) {
         if (Directory.Exists(Util.DataPath)) {
-            Directory.Delete(Util.DataPath, true);
+            Directory.Delete(Util.DataPath, true);  // 删除数据 缓存中心 中转站
         }
-        string streamPath = Application.streamingAssetsPath;
+        string streamPath = Application.streamingAssetsPath;  // 删除数据 初始化中心
         if (Directory.Exists(streamPath)) {
             Directory.Delete(streamPath, true);
         }
         Directory.CreateDirectory(streamPath);
         AssetDatabase.Refresh();
 
-        maps.Clear();
-        if (AppConst.LuaBundleMode) {
+        maps.Clear(); //要打 bundel 包的管理仓库 清空
+        if (AppConst.LuaBundleMode) { // 是否要打包 模式
             HandleLuaBundle();
         } else {
             HandleLuaFile();
@@ -70,24 +75,25 @@ public class Packager {
             HandleExampleBundle();
         }
         string resPath = "Assets/" + AppConst.AssetDir;
-        BuildPipeline.BuildAssetBundles(resPath, maps.ToArray(), BuildAssetBundleOptions.None, target);
+        BuildPipeline.BuildAssetBundles(resPath, maps.ToArray(), BuildAssetBundleOptions.None, target); // 出包
         BuildFileIndex();
 
-        string streamDir = Application.dataPath + "/" + AppConst.LuaTempDir;
-        if (Directory.Exists(streamDir)) Directory.Delete(streamDir, true);
-        AssetDatabase.Refresh();
+        // string streamDir = Application.dataPath + "/" + AppConst.LuaTempDir;
+        // if (Directory.Exists(streamDir)) Directory.Delete(streamDir, true);
+        // AssetDatabase.Refresh();
     }
-
+    // 写的什么逻辑，最终的目的就是为了 压入 打成bundle  包 ；
     static void AddBuildMap(string bundleName, string pattern, string path) {
         string[] files = Directory.GetFiles(path, pattern);
         if (files.Length == 0) return;
-
+        // 如果是只有子目录的情况 下面的子文件
         for (int i = 0; i < files.Length; i++) {
             files[i] = files[i].Replace('\\', '/');
+            Debug.Log(files[i]);
         }
         AssetBundleBuild build = new AssetBundleBuild();
-        build.assetBundleName = bundleName;
-        build.assetNames = files;
+        build.assetBundleName = bundleName; // 为打出的assetbundle名
+        build.assetNames = files;  //  为 要打包的资源路径 这里使用相对路径，它是一个数组，说明可以把多个对象打成一个assetbundle。 一般是 Assets开头 比如 ：Assets/Lua/3rd
         maps.Add(build);
     }
 
@@ -95,10 +101,14 @@ public class Packager {
     /// 处理Lua代码包
     /// </summary>
     static void HandleLuaBundle() {
-        string streamDir = Application.dataPath + "/" + AppConst.LuaTempDir;
-        if (!Directory.Exists(streamDir)) Directory.CreateDirectory(streamDir);
-
-        string[] srcDirs = { CustomSettings.luaDir, CustomSettings.FrameworkPath + "/ToLua/Lua" };
+        string streamDir = Application.dataPath + "/" + AppConst.LuaTempDir;     //E:/TestCode/LuaFramework_UGUI_V2-master/Assets/Lua/
+        Debug.Log("创建临时汇集目录 "+streamDir);
+        if (!Directory.Exists(streamDir)) Directory.CreateDirectory(streamDir);  // 好像没有创建这个目录，找不到
+      
+       
+        string[] srcDirs = { CustomSettings.luaDir, CustomSettings.FrameworkPath + "/ToLua/Lua" }; 
+        Debug.Log("自定义具体项目lua脚本的目录 "+ srcDirs[0]);   // E:/TestCode/LuaFramework_UGUI_V2-master/Assets/LuaFramework/Lua/  
+        Debug.Log("Tolua封装好的工具集或插件 "+ srcDirs[1]);  // E:/TestCode/LuaFramework_UGUI_V2-master/Assets/LuaFramework/ToLua/Lua 比如这里可以换成 xlua？
         for (int i = 0; i < srcDirs.Length; i++) {
             if (AppConst.LuaByteMode) {
                 string sourceDir = srcDirs[i];
@@ -116,33 +126,37 @@ public class Packager {
                     EncodeLuaFile(files[j], dest);
                 }    
             } else {
-                ToLuaMenu.CopyLuaBytesFiles(srcDirs[i], streamDir);
+                ToLuaMenu.CopyLuaBytesFiles(srcDirs[i], streamDir); // 谁拷贝到谁？  把前面的目录下的所有.lua文件 拷贝到 后面的目录下 并且加上 .byte
             }
         }
-        string[] dirs = Directory.GetDirectories(streamDir, "*", SearchOption.AllDirectories);
+        string[] dirs = Directory.GetDirectories(streamDir, "*", SearchOption.AllDirectories); // 然后继续在新路径下 遍历所有的目录
         for (int i = 0; i < dirs.Length; i++) {
-            string name = dirs[i].Replace(streamDir, string.Empty);
-            name = name.Replace('\\', '_').Replace('/', '_');
-            name = "lua/lua_" + name.ToLower() + AppConst.ExtName;
+            Debug.Log(dirs[i]);      //比如： E:/TestCode/LuaFramework_UGUI_V2-master/Assets/Lua/3rd
+            string name = dirs[i].Replace(streamDir, string.Empty); // 路径名字如果有空字符 处理掉，当然命名的时候不建议带有空字符的
+            name = name.Replace('\\', '_').Replace('/', '_'); // 处理所有的 目录分隔符 变成 _; 这个方便后面 解析导入lua
+            name = "lua/lua_" + name.ToLower() + AppConst.ExtName; // 起个打包的报名字，到时候方便 反向解析回来 如 "lua/lua_XXXX_YYY_BB.lua.bytes.unity3d"
 
             string path = "Assets" + dirs[i].Replace(Application.dataPath, "");
-            AddBuildMap(name, "*.bytes", path);
+            Debug.Log("相对路劲path "+path);  // 得到的是相对路径 比如  Assets/Lua/3rd
+            Debug.Log("可能出的 assetBundleName "+name);   //   name lua/lua_3rd.unity3d
+            AddBuildMap(name, "*.bytes", path); 
         }
-        AddBuildMap("lua/lua" + AppConst.ExtName, "*.bytes", "Assets/" + AppConst.LuaTempDir);
+       AddBuildMap("lua/lua" + AppConst.ExtName, "*.bytes", "Assets/" + AppConst.LuaTempDir); // 这句话会不会重复功能？ 就多了2个文件 lua 和 lua.unity3d 不知道干啥用就是针对目录的随便打个包？
 
-        //-------------------------------处理非Lua文件----------------------------------
+        //-------------------------------处理非Lua文件---------------------------------- 
         string luaPath = AppDataPath + "/StreamingAssets/lua/";
+        Debug.Log(luaPath);
         for (int i = 0; i < srcDirs.Length; i++) {
             paths.Clear(); files.Clear();
             string luaDataPath = srcDirs[i].ToLower();
             Recursive(luaDataPath);
             foreach (string f in files) {
-                if (f.EndsWith(".meta") || f.EndsWith(".lua")) continue;
-                string newfile = f.Replace(luaDataPath, "");
+                if (f.EndsWith(".meta") || f.EndsWith(".lua")) continue; //  遇到这个两类型的文件 跳过；
+                string newfile = f.Replace(luaDataPath, ""); // 去掉目录得到 文件名
                 string path = Path.GetDirectoryName(luaPath + newfile);
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-
-                string destfile = path + "/" + Path.GetFileName(f);
+        
+                string destfile = path + "/" + Path.GetFileName(f); /// 非lua文件直接拷贝 到 出包文件的对应目录，目前 是定义到  luaPath = AppDataPath + "/StreamingAssets/lua/";
                 File.Copy(f, destfile, true);
             }
         }
@@ -150,7 +164,7 @@ public class Packager {
     }
 
     /// <summary>
-    /// 处理框架实例包
+    /// 处理框架实例包  实例的资源 打包进来 可以借鉴 打 prefab 或者其他格式的 临时包 主要是API AddBuildMap 的调用；想要打包必然要用到这个 ：它会把要打的资源 标记；
     /// </summary>
     static void HandleExampleBundle() {
         string resPath = AppDataPath + "/" + AppConst.AssetDir + "/";
@@ -203,7 +217,7 @@ public class Packager {
         EditorUtility.ClearProgressBar();
         AssetDatabase.Refresh();
     }
-
+     // 创建一个文本用来记录MD5 
     static void BuildFileIndex() {
         string resPath = AppDataPath + "/StreamingAssets/";
         ///----------------------创建文件列表-----------------------

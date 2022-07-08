@@ -4,12 +4,12 @@
 
 using System;
 using System.Collections.Generic;
-
+ // 控制中心，或者是 指令中心   实现的核心主要是对下面两个库的管理， 加和减；
 public class Controller : IController {
-    protected IDictionary<string, Type> m_commandMap;
-    protected IDictionary<IView, List<string>> m_viewCmdMap;
+    protected IDictionary<string, Type> m_commandMap; // 一般命令库
+    protected IDictionary<IView, List<string>> m_viewCmdMap;  // 视图命令库
 
-    protected static volatile IController m_instance;
+    protected static volatile IController m_instance; // 单例？
     protected readonly object m_syncRoot = new object();
     protected static readonly object m_staticSyncRoot = new object();
 
@@ -32,8 +32,8 @@ public class Controller : IController {
     }
 
     protected virtual void InitializeController() {
-        m_commandMap = new Dictionary<string, Type>();
-        m_viewCmdMap = new Dictionary<IView, List<string>>();
+        m_commandMap = new Dictionary<string, Type>();  // 控制中心 有两大 命令存储库；   一般命令
+        m_viewCmdMap = new Dictionary<IView, List<string>>();  //  视图命令
     }
 
     public virtual void ExecuteCommand(IMessage note) {
@@ -54,7 +54,7 @@ public class Controller : IController {
         if (commandType != null) {  //Controller
             object commandInstance = Activator.CreateInstance(commandType);
             if (commandInstance is ICommand) {
-                ((ICommand)commandInstance).Execute(note);
+                ((ICommand)commandInstance).Execute(note); // 这里应该是重点； 当一个普通命令进来的时候，就是表示 需要实例化 一个类实例对象；比如 NotiConst.START_UP 命令就是对应实例化 StartUpCommand
             }
         }
         if (views != null && views.Count > 0) {
