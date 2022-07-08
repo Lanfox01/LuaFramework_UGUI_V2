@@ -8,6 +8,9 @@ using System.IO;
 
 
 namespace LuaFramework {
+    /// <summary>
+    ///  游戏主逻辑管理流程
+    /// </summary>
     public class GameManager : Manager {
         protected static bool initialize = false;
         private List<string> downloadFiles = new List<string>();
@@ -34,18 +37,21 @@ namespace LuaFramework {
         /// 释放资源
         /// </summary>
         public void CheckExtractResource() {
+            // 判断在缓存数据中心是否存在 一般是沙盒路径
             bool isExists = Directory.Exists(Util.DataPath) &&
               Directory.Exists(Util.DataPath + "lua/") && File.Exists(Util.DataPath + "files.txt");
             if (isExists || AppConst.DebugMode) {
-                StartCoroutine(OnUpdateResource());
+                StartCoroutine(OnUpdateResource()); // 路径存在，比如是二次运行的情况下。那么就开启更新 数据的功能
                 return;   //文件已经解压过了，自己可添加检查文件列表逻辑
             }
-            StartCoroutine(OnExtractResource());    //启动释放协成 
+            // 如果缓存数据中心不存在的情况 比如第一次运行
+            StartCoroutine(OnExtractResource());    //启动释放协成   
         }
-
+        
+        // 推测这里的功能 应该是从 包内数据AssetStreaming 第一次 搞到  缓存中心的过程
         IEnumerator OnExtractResource() {
             string dataPath = Util.DataPath;  //数据目录
-            string resPath = Util.AppContentPath(); //游戏包资源目录
+            string resPath = Util.AppContentPath(); //游戏包资源目录  //一般开始的安装之后默认在 AssetStreaming 中
 
             if (Directory.Exists(dataPath)) Directory.Delete(dataPath, true);
             Directory.CreateDirectory(dataPath);
@@ -112,9 +118,10 @@ namespace LuaFramework {
         /// </summary>
         IEnumerator OnUpdateResource() {
             if (!AppConst.UpdateMode) {
-                OnResourceInited();
-                yield break;
+                OnResourceInited(); // 这里是不更新数据，直接跳刀结束的时候
+                yield break; 
             }
+            // 具体的 需要 刷新数据的模块； 似乎用到 www 可能有点过时？
             string dataPath = Util.DataPath;  //数据目录
             string url = AppConst.WebUrl;
             string message = string.Empty;

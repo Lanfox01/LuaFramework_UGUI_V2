@@ -7,15 +7,16 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 事件命令
+/// 事件命令    定义各种 几种基本事件命令，执行，增加，剔除，注册等功能块，接口，  具体的做法，核心分派到 IController中，基本上也是根据IController中的功能进行设计的；
+/// 实际上具体的细化和执行是由它的派生类 Controller 操作； 所以真正干活的 Controller；
 /// </summary>
-public class ControllerCommand : ICommand {
+public class ControllerCommand : ICommand { 
     public virtual void Execute(IMessage message) {
     }
 }
 
 public class Facade {
-    protected IController m_controller;
+    protected IController m_controller; // 这其实是使用的重写后的 Controller
     static GameObject m_GameManager;
     static Dictionary<string, object> m_Managers = new Dictionary<string, object>();
 
