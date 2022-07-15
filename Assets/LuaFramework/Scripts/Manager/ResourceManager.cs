@@ -35,12 +35,12 @@ namespace LuaFramework {
         }
 
         // Load AssetBundleManifest.  加载资源的主配置表
-        public void Initialize(string manifestName, Action initOK) {
-            m_BaseDownloadingURL = Util.GetRelativePath(); // streamingAssetsPath
+        public void Initialize(string manifestName, Action initOK) { // manifestName = "StreamingAssets"
+            m_BaseDownloadingURL = Util.GetRelativePath(); // streamingAssetsPath ；一般理解就是 客户端资源缓存中心，这里先捕获到 主配置文件；比如此默认的配置文件名 刚好也叫 streamingAssetsPath
             LoadAsset<AssetBundleManifest>(manifestName, new string[] { "AssetBundleManifest" }, delegate(UObject[] objs) {
                 if (objs.Length > 0) {
                     m_AssetBundleManifest = objs[0] as AssetBundleManifest;
-                    m_AllManifest = m_AssetBundleManifest.GetAllAssetBundles();
+                    m_AllManifest = m_AssetBundleManifest.GetAllAssetBundles(); // 最终是为了得到 所有bundle文件名字汇总；存入 m_AllManifest
                 }
                 if (initOK != null) initOK();
             });

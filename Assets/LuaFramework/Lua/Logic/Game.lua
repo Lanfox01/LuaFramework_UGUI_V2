@@ -24,9 +24,12 @@ local transform;
 local gameObject;
 local WWW = UnityEngine.WWW;
 
+
+--- 这里的作用意图是 加载每一个交互界面的 lua逻辑 代码
+---- 正常情况下是一个界面名字和对应的lua脚本名字差不多 而且 放到 view下面，当然也可以弄到其他路径
 function Game.InitViewPanels()
 	for i = 1, #PanelNames do
-		require ("View/"..tostring(PanelNames[i]))
+		require ("View/"..tostring(PanelNames[i])) -- 每一个界面名字都有对应一个 view/pannlexxx.lua 的文件描述吗
 	end
 end
 
@@ -34,20 +37,20 @@ end
 function Game.OnInitOK()
     AppConst.SocketPort = 2012;
     AppConst.SocketAddress = "127.0.0.1";
-    networkMgr:SendConnect();
+    networkMgr:SendConnect(); -- 这个是调用c# 端  NetworkManager.SendConnect() 发起连接请求
 
     --注册LuaView--
     this.InitViewPanels();
-
+----------------------------------------------------
     this.test_class_func();
-    this.test_pblua_func();
-    this.test_cjson_func();
-    this.test_pbc_func();
+    this.test_pblua_func(); -- 测试 protobuf 的用法
+    this.test_cjson_func(); --- 测试 json 用法
+    this.test_pbc_func(); --- 测试 pbc 是什么玩意
     this.test_lpeg_func();
     this.test_sproto_func();
-    coroutine.start(this.test_coroutine);
+    coroutine.start(this.test_coroutine); -- 测试 协程用法
 
-    CtrlManager.Init();
+    CtrlManager.Init(); --- 这个控制器到底是什么玩意？
     local ctrl = CtrlManager.GetCtrl(CtrlNames.Prompt);
     if ctrl ~= nil and AppConst.ExampleMode == 1 then
         ctrl:Awake();
@@ -62,7 +65,7 @@ function Game.test_coroutine()
     coroutine.wait(1);	
     logWarn("2222");
 	
-    local www = WWW("http://bbs.ulua.org/readme.txt");
+    local www = WWW("http://bbs.ulua.org/readme.txt"); --- 这个网站明显访问不了
     coroutine.www(www);
     logWarn(www.text);    	
 end
@@ -136,10 +139,10 @@ end
 
 --测试lua类--
 function Game.test_class_func()
-    LuaClass:New(10, 20):test();
+    LuaClass:New(10, 20):test();-- 随便整理的，玩下 luaClass构造lua 类表，以及实例方法；
 end
 
---测试pblua--
+--测试pblua-- 这应该是测试 lua protobuf 的用法， 这里是反序列化 包成 二进制
 function Game.test_pblua_func()
     local login = login_pb.LoginRequest();
     login.id = 2000;
@@ -147,10 +150,10 @@ function Game.test_pblua_func()
     login.email = 'jarjin@163.com';
     
     local msg = login:SerializeToString();
-    LuaHelper.OnCallLuaFunc(msg, this.OnPbluaCall);
+    LuaHelper.OnCallLuaFunc(msg, this.OnPbluaCall); --- 这句是直接 搞？ 序列和马上反序列？
 end
 
---pblua callback--
+--pblua callback-- -- 这里是回调，监听返回的东西 序列化解析，
 function Game.OnPbluaCall(data)
     local msg = login_pb.LoginRequest();
     msg:ParseFromString(data);

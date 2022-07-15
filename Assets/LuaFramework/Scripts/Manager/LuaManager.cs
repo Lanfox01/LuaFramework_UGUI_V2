@@ -29,7 +29,7 @@ namespace LuaFramework {
         }
 
         void StartLooper() {
-            loop = gameObject.AddComponent<LuaLooper>();
+            loop = gameObject.AddComponent<LuaLooper>();// 不是很懂这个做什么， 推荐可能是为了给lua端划分跟unity 一样的三大帧事件
             loop.luaState = lua;
         }
 
@@ -43,12 +43,12 @@ namespace LuaFramework {
             lua.LuaSetField(-2, "cjson.safe");
         }
 
-        void StartMain() {
-            lua.DoFile("Main.lua");
-
-            LuaFunction main = lua.GetFunction("Main");
-            main.Call();
-            main.Dispose();
+        void StartMain() {               
+            // 在c# 端 调用一个 lua function的具体过程 步骤；  （tolua. 其他的lua 估计也是大同小异）
+            lua.DoFile("Main.lua");  // 一般写法就是这样子， dofile 引入lua文件，当然b必须在它的 AddSearchPath 下，这句话才不会报错；
+            LuaFunction main = lua.GetFunction("Main"); // 接着才能在虚拟机中找到 这个Fun 具体的方法 mian（）
+            main.Call(); // 然后调用它 call()；
+            main.Dispose();// 不要就释放掉；
             main = null;    
         }
         
@@ -83,11 +83,11 @@ namespace LuaFramework {
         /// <summary>
         /// 初始化LuaBundle
         /// </summary>
-        void InitLuaBundle() {
-            if (loader.beZip) {
-                loader.AddBundle("lua/lua.unity3d");
-                loader.AddBundle("lua/lua_math.unity3d");
-                loader.AddBundle("lua/lua_system.unity3d");
+        void InitLuaBundle() { //可以参考对比下 公司的那个艾代码； 问题：如果不是基础的Lua,是否要加入这里？ 数了下外面。unity3d的包有20个 这里只有16个
+            if (loader.beZip) {// 这里为真； 下面一般是针对于lua 出的bundle包名字，一般这些lua 必然是非常基础功能的；不是逻辑业务的lua,正常一般不改它们的名字
+                loader.AddBundle("lua/lua.unity3d"); // 有没有发现？后缀名都是 unity3d 这个在出包的时候 也必须考虑进去；
+                loader.AddBundle("lua/lua_math.unity3d"); 
+                loader.AddBundle("lua/lua_system.unity3d"); // 这个实际的目录是 lua/lua_system.unity3d 这是一个bundle的路径，通过这个代码可以解析包里面的代码；
                 loader.AddBundle("lua/lua_system_reflection.unity3d");
                 loader.AddBundle("lua/lua_unityengine.unity3d");
                 loader.AddBundle("lua/lua_common.unity3d");
@@ -102,6 +102,7 @@ namespace LuaFramework {
                 loader.AddBundle("lua/lua_3rd_pbc.unity3d");
                 loader.AddBundle("lua/lua_3rd_pblua.unity3d");
                 loader.AddBundle("lua/lua_3rd_sproto.unity3d");
+                //对比发现没有加进来的有 ： lua_cjson.unity3d   lua_jit.unity3d lua_lpeg.unity3d  lua_socket.unity3d  lua_system_injection
             }
         }
 

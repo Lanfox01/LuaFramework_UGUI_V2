@@ -25,7 +25,7 @@ using LuaInterface;
 
 public class LuaLooper : MonoBehaviour 
 {    
-    public LuaBeatEvent UpdateEvent
+    public LuaBeatEvent UpdateEvent //LuaBeatEvent 这个是什么样的一个事件类？
     {
         get;
         private set;
@@ -62,7 +62,7 @@ public class LuaLooper : MonoBehaviour
 
     LuaBeatEvent GetEvent(string name)
     {
-        LuaTable table = luaState.GetTable(name);
+        LuaTable table = luaState.GetTable(name); // UpdateBeat 这三个表 具体的话注册在哪里？
 
         if (table == null)
         {

@@ -20,4 +20,6 @@ namespace LuaFramework {
  *  另外 响应一般命令一般都是实例化一个类实例， 但是监听 view 命令具体是做啥的？
  *
  * LuaLooper 这个代码做啥用的，为什么一开始 start 就 异常为空报错？
+ *
+ * 对比下NetworkManager 和 Network.lua 
  */

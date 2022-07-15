@@ -18,9 +18,10 @@ local transform;
 local gameObject;
 local islogging = false;
 
+-- 这个 start 是被 c# 端 networkManager.cs 调用
 function Network.Start() 
     logWarn("Network.Start!!");
-    Event.AddListener(Protocal.Connect, this.OnConnect); 
+    Event.AddListener(Protocal.Connect, this.OnConnect); -- 首先注册了几个必备的网络事件监听
     Event.AddListener(Protocal.Message, this.OnMessage); 
     Event.AddListener(Protocal.Exception, this.OnException); 
     Event.AddListener(Protocal.Disconnect, this.OnDisconnect); 
@@ -36,7 +37,7 @@ function Network.OnConnect()
     logWarn("Game Server connected!!");
 end
 
---异常断线--
+--异常断线-- 
 function Network.OnException() 
     islogging = false; 
     NetManager:SendConnect();
@@ -49,7 +50,7 @@ function Network.OnDisconnect()
     logError("OnDisconnect------->>>>");
 end
 
---登录返回--
+--登录返回--  --应该是正常的接受信息
 function Network.OnMessage(buffer) 
 	if TestProtoType == ProtocalType.BINARY then
 		this.TestLoginBinary(buffer);

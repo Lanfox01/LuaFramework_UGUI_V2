@@ -243,11 +243,11 @@ namespace LuaFramework {
  ///  // 如果前面对框架使用都没任何问题， 真正的游戏主逻辑结构是写到这里的
  /// </summary>
         void OnInitialize() {
-            LuaManager.InitStart(); //lua 虚拟机完美启动
-            LuaManager.DoFile("Logic/Game");         //加载游戏
-            LuaManager.DoFile("Logic/Network");      //加载网络  网络的使用初始化交到Lua端控制？
-            NetManager.OnInit();                     //初始化网络
-            Util.CallMethod("Game", "OnInitOK");     //初始化完成
+            LuaManager.InitStart(); //lua 虚拟机完美启动 接下来是可以 写 Lua 逻辑代码了
+            LuaManager.DoFile("Logic/Game");         //加载Lua端游戏 模块
+            LuaManager.DoFile("Logic/Network");      //加载lua端网络模块  网络的使用初始化交到Lua端控制？
+            NetManager.OnInit();                     //初始化网络   这里C#端控制了在写在lua端的网络监听；
+            Util.CallMethod("Game", "OnInitOK");     //初始化完成  调用的应该是 "Logic/Game" 里面的OnInitOk 方法 这里有写死了一些 服务端的IP 和端口信息；
 
             initialize = true;
 

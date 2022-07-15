@@ -25,7 +25,7 @@ namespace LuaFramework {
         }
 
         /// <summary>
-        /// 添加打入Lua代码的AssetBundle
+        /// 添加打入Lua代码的AssetBundle ？ 从lua导成的bundle包中，提取到Lua, 并入到lua运行环境 base.AddSearchBundle
         /// </summary>
         /// <param name="bundle"></param>
         public void AddBundle(string bundleName) {

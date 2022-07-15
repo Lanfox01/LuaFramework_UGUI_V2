@@ -5,7 +5,7 @@ using LuaInterface;
 using System;
 
 namespace LuaFramework {
-    public static class LuaHelper {
+    public static class LuaHelper { /// 不是很懂这个类干什么用的？？
 
         /// <summary>
         /// getType
