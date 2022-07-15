@@ -7,10 +7,10 @@ using System.Collections.Generic;
  // 控制中心，或者是 指令中心   实现的核心主要是对下面两个库的管理， 加和减；
 public class Controller : IController {
     protected IDictionary<string, Type> m_commandMap; // 一般命令库
-    protected IDictionary<IView, List<string>> m_viewCmdMap;  // 视图命令库
+    protected IDictionary<IView, List<string>> m_viewCmdMap;  // 视图命令库  按照元素理解，是不是一个视图对应有多个命令?
 
     protected static volatile IController m_instance; // 单例？
-    protected readonly object m_syncRoot = new object();
+    protected readonly object m_syncRoot = new object(); // 这个锁不锁 是不是跟视图命令和一般命令也有影响？
     protected static readonly object m_staticSyncRoot = new object();
 
     protected Controller() {
@@ -40,26 +40,28 @@ public class Controller : IController {
         Type commandType = null;
         List<IView> views = null;
         lock (m_syncRoot) {
-            if (m_commandMap.ContainsKey(note.Name)) {
-                commandType = m_commandMap[note.Name];
+            if (m_commandMap.ContainsKey(note.Name)) { //命令集中是否包含 这个 键值
+                commandType = m_commandMap[note.Name]; // 有的话，就找出这键值对应的值 一般来说值 就是一个什么样的类型
             } else {
                 views = new List<IView>();
                 foreach (var de in m_viewCmdMap) {
                     if (de.Value.Contains(note.Name)) {
-                        views.Add(de.Key);
+                        views.Add(de.Key); // 遍历 m_viewCmdMap 中，但凡有发现各个视图中有涉及或者监听到这条命令的，把这些视图都添加归类到 views;
                     }
                 }
             }
         }
-        if (commandType != null) {  //Controller
+        // 什么情况不为空？1 一般命令 2 就是上面的运行发现，该指令是之前注册过的，这里才会对应的实例化一个相应的类实例；
+        if (commandType != null) {  //Controller 
             object commandInstance = Activator.CreateInstance(commandType);
             if (commandInstance is ICommand) {
                 ((ICommand)commandInstance).Execute(note); // 这里应该是重点； 当一个普通命令进来的时候，就是表示 需要实例化 一个类实例对象；比如 NotiConst.START_UP 命令就是对应实例化 StartUpCommand
             }
         }
+        // 响应的当处理 视图命令的时候 
         if (views != null && views.Count > 0) {
             for (int i = 0; i < views.Count; i++) {
-                views[i].OnMessage(note);
+                views[i].OnMessage(note); // 这里遍历 上面抓捕到的 相关视图，并且给这些视图依次发送 信号；；
             }
             views = null;
         }

@@ -34,7 +34,7 @@ namespace LuaFramework {
         }
 
         /// <summary>
-        /// 释放资源
+        /// 判断数据缓存是否存在；第一次不存在要从assetsteam中拷贝过来，
         /// </summary>
         public void CheckExtractResource() {
             // 判断在缓存数据中心是否存在 一般是沙盒路径
@@ -45,7 +45,7 @@ namespace LuaFramework {
                 return;   //文件已经解压过了，自己可添加检查文件列表逻辑
             }
             // 如果缓存数据中心不存在的情况 比如第一次运行
-            StartCoroutine(OnExtractResource());    //启动释放协成   
+            StartCoroutine(OnExtractResource());    //启动释放协成   从assetsteam中拷贝过来，
         }
         
         // 推测这里的功能 应该是从 包内数据AssetStreaming 第一次 搞到  缓存中心的过程
@@ -114,11 +114,12 @@ namespace LuaFramework {
         }
 
         /// <summary>
-        /// 启动更新下载，这里只是个思路演示，此处可启动线程下载更新
+        /// 从资源服务器上下载资源
+        /// 启动更新下载，这里只是个思路演示，此处可启动线程下载更新；更新的数据就存入到数据缓存中心；
         /// </summary>
         IEnumerator OnUpdateResource() {
             if (!AppConst.UpdateMode) {
-                OnResourceInited(); // 这里是不更新数据，直接跳刀结束的时候
+                OnResourceInited(); // 这里是不更新数据，直接跳刀结束的时候，比如离线设置，或者系统设置不默认更新的情况；
                 yield break; 
             }
             // 具体的 需要 刷新数据的模块； 似乎用到 www 可能有点过时？
@@ -127,7 +128,7 @@ namespace LuaFramework {
             string message = string.Empty;
             string random = DateTime.Now.ToString("yyyymmddhhmmss");
             string listUrl = url + "files.txt?v=" + random;
-            Debug.LogWarning("LoadUpdate---->>>" + listUrl);
+            Debug.LogWarning("LoadUpdate---->>>" + listUrl);//最终这给到的资源下载地址是什么？为什么要这么长 时间错什么的，能对的上资源吗
 
             WWW www = new WWW(listUrl); yield return www;
             if (www.error != null) {
