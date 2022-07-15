@@ -7,7 +7,8 @@ using System.Collections.Generic;
  // 控制中心，或者是 指令中心   实现的核心主要是对下面两个库的管理， 加和减；
 public class Controller : IController {
     protected IDictionary<string, Type> m_commandMap; // 一般命令库
-    protected IDictionary<IView, List<string>> m_viewCmdMap;  // 视图命令库  按照元素理解，是不是一个视图对应有多个命令?
+    protected IDictionary<IView, List<string>> m_viewCmdMap;  // 视图命令库  按照元素理解，是不是一个视图对应有多个命令?  具体这里有多少视图？
+    // 每个视图 对应多少相关的命令？
 
     protected static volatile IController m_instance; // 单例？
     protected readonly object m_syncRoot = new object(); // 这个锁不锁 是不是跟视图命令和一般命令也有影响？
@@ -61,7 +62,7 @@ public class Controller : IController {
         // 响应的当处理 视图命令的时候 
         if (views != null && views.Count > 0) {
             for (int i = 0; i < views.Count; i++) {
-                views[i].OnMessage(note); // 这里遍历 上面抓捕到的 相关视图，并且给这些视图依次发送 信号；；
+                views[i].OnMessage(note); // 这里遍历 上面抓捕到的相关视图，并且给这些视图依次发送 信号；；
             }
             views = null;
         }

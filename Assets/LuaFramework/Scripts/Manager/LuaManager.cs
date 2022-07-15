@@ -68,6 +68,7 @@ namespace LuaFramework {
 
         /// <summary>
         /// 初始化Lua代码加载路径
+        /// 编辑模式就在 工程目录/LuaFramework/ 下面的 两个子目录中查找： "/Lua"  "/ToLua/Lua"
         /// </summary>
         void InitLuaPath() {
             if (AppConst.DebugMode) {

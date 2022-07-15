@@ -122,11 +122,12 @@ namespace LuaFramework {
                 OnResourceInited(); // 这里是不更新数据，直接跳刀结束的时候，比如离线设置，或者系统设置不默认更新的情况；
                 yield break; 
             }
-            // 具体的 需要 刷新数据的模块； 似乎用到 www 可能有点过时？
+            // 具体的 需要 刷新数据的模块； 似乎用到 www 可能有点过时？ 注意给他配置一个资源服务器，端口地址查看修改  AppConst.WebUrl
+            //  这里客户端的下载路径时间 怎么跟服务端对上？
             string dataPath = Util.DataPath;  //数据目录
             string url = AppConst.WebUrl;
             string message = string.Empty;
-            string random = DateTime.Now.ToString("yyyymmddhhmmss");
+            string random = DateTime.Now.ToString("yyyymmddhhmmss"); // 这里到底是怎么设计的？怎么可以匹配到服务器的更新包？感觉服务器应该有一个后端处理PHP？
             string listUrl = url + "files.txt?v=" + random;
             Debug.LogWarning("LoadUpdate---->>>" + listUrl);//最终这给到的资源下载地址是什么？为什么要这么长 时间错什么的，能对的上资源吗
 
@@ -138,9 +139,9 @@ namespace LuaFramework {
             if (!Directory.Exists(dataPath)) {
                 Directory.CreateDirectory(dataPath);
             }
-            File.WriteAllBytes(dataPath + "files.txt", www.bytes);
+            File.WriteAllBytes(dataPath + "files.txt", www.bytes); // 这个 files.txt是总纲文件吗？
             string filesText = www.text;
-            string[] files = filesText.Split('\n');
+            string[] files = filesText.Split('\n'); // 下面都是根据总纲文件中给的地址 以此索引下载，基本上都是文本文件
 
             for (int i = 0; i < files.Length; i++) {
                 if (string.IsNullOrEmpty(files[i])) continue;
@@ -153,13 +154,13 @@ namespace LuaFramework {
                 }
                 string fileUrl = url + f + "?v=" + random;
                 bool canUpdate = !File.Exists(localfile);
-                if (!canUpdate) {
+                if (!canUpdate) { //文件 md5 校验，无法通过表示可能被恶意修改了，所以这个文件不能被更新，并且删掉这个
                     string remoteMd5 = keyValue[1].Trim();
                     string localMd5 = Util.md5file(localfile);
                     canUpdate = !remoteMd5.Equals(localMd5);
                     if (canUpdate) File.Delete(localfile);
                 }
-                if (canUpdate) {   //本地缺少文件
+                if (canUpdate) {   //本地缺少文件  那就是更新包的文件是新加的，那么很好，直接下载下来
                     Debug.Log(fileUrl);
                     message = "downloading>>" + fileUrl;
                     facade.SendMessageCommand(NotiConst.UPDATE_MESSAGE, message);
