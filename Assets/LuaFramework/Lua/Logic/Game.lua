@@ -33,7 +33,7 @@ function Game.InitViewPanels()
 	end
 end
 
---初始化完成，发送链接服务器信息--
+--初始化完成，发送链接服务器信息--   这个是啥服务器？ 资源服务器？应该不是，这里发生在资源加载之后的;
 function Game.OnInitOK()
     AppConst.SocketPort = 2012;
     AppConst.SocketAddress = "127.0.0.1";

@@ -236,6 +236,8 @@ public class SocketClient {
     /// 发送连接请求
     /// </summary>
     public void SendConnect() {
+        Debug.Log(" 注意，公司这里是什么服务器？ AppConst.SocketAddress: "+AppConst.SocketAddress);
+        Debug.Log("AppConst.SocketPort: "+AppConst.SocketPort);
         ConnectServer(AppConst.SocketAddress, AppConst.SocketPort);
     }
 

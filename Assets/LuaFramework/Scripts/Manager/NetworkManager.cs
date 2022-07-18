@@ -27,7 +27,7 @@ namespace LuaFramework {
         }
 
         public void OnInit() {
-            CallMethod("Start");
+            CallMethod("Start"); // 调用 network.lua 中的 start 方法， 主要实现 首先注册了几个必备的网络事件监听
         }
 
         public void Unload() {
@@ -38,7 +38,7 @@ namespace LuaFramework {
         /// ִ��Lua����
         /// </summary>
         public object[] CallMethod(string func, params object[] args) {
-            return Util.CallMethod("Network", func, args);
+            return Util.CallMethod("Network", func, args);   //为什么 要去执行 lua 中的方法？ 直接c# 写入 不香吗
         }
 
         ///------------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ namespace LuaFramework {
         /// ������������
         /// </summary>
         public void SendConnect() {
-            SocketClient.SendConnect();
+            SocketClient.SendConnect(); // 这个连接请求 到底是谁发起的？ 为什么 在wrap 中发起？ 或者可能在 lua 中发起？ 果然在 Game.lua 和 NetWork 都有调用
         }
 
         /// <summary>
