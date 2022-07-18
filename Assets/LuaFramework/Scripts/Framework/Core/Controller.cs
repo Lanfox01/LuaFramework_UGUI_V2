@@ -12,7 +12,7 @@ public class Controller : IController {
 
     protected static volatile IController m_instance; // 单例？
     protected readonly object m_syncRoot = new object(); // 这个锁不锁 是不是跟视图命令和一般命令也有影响？
-    protected static readonly object m_staticSyncRoot = new object();
+    protected static readonly object m_staticSyncRoot = new object(); // 静态锁 跟上面的那个锁什么区别；
 
     protected Controller() {
         InitializeController();
@@ -40,8 +40,8 @@ public class Controller : IController {
     public virtual void ExecuteCommand(IMessage note) {
         Type commandType = null;
         List<IView> views = null;
-        lock (m_syncRoot) {
-            if (m_commandMap.ContainsKey(note.Name)) { //命令集中是否包含 这个 键值
+        lock (m_syncRoot) { // 加锁一般是考虑到多线程的情况。那么到底有哪几个检查会进来？或者说关于map 字典这种队列的有加减操作的，必须在操作的时候锁定下  
+            if (m_commandMap.ContainsKey(note.Name)) { //命令集中是否包含 这个 键值  首先考虑是不是特殊命令集， 不是再考虑视图命令
                 commandType = m_commandMap[note.Name]; // 有的话，就找出这键值对应的值 一般来说值 就是一个什么样的类型
             } else {
                 views = new List<IView>();
@@ -55,7 +55,7 @@ public class Controller : IController {
         // 什么情况不为空？1 一般命令 2 就是上面的运行发现，该指令是之前注册过的，这里才会对应的实例化一个相应的类实例；
         if (commandType != null) {  //Controller 
             object commandInstance = Activator.CreateInstance(commandType);
-            if (commandInstance is ICommand) {
+            if (commandInstance is ICommand) { // 如果传递过来的命令是 Icommand 命令类型 就执行其中的 Execute 接口； 非 改类型的接口；就不需要了，只要实例化这个类就行；
                 ((ICommand)commandInstance).Execute(note); // 这里应该是重点； 当一个普通命令进来的时候，就是表示 需要实例化 一个类实例对象；比如 NotiConst.START_UP 命令就是对应实例化 StartUpCommand
             }
         }
@@ -73,7 +73,7 @@ public class Controller : IController {
             m_commandMap[commandName] = commandType;
         }
     }
-
+    // 视图命令 也需要注册的。  对比 m_viewCmdMap 视图命令中心和 新入的 commandNames，没有就加进来，有就pass
     public virtual void RegisterViewCommand(IView view, string[] commandNames) {
         lock (m_syncRoot) {
             if (m_viewCmdMap.ContainsKey(view)) {

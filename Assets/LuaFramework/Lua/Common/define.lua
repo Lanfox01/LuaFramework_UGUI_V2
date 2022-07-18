@@ -3,7 +3,7 @@ CtrlNames = {
 	Prompt = "PromptCtrl",
 	Message = "MessageCtrl"
 }
-
+--- 需要整理注册每一个交互界面的名字？
 PanelNames = {
 	"PromptPanel",	
 	"MessagePanel",

@@ -56,7 +56,7 @@ public class Packager {
     /// </summary>
     public static void BuildAssetResource(BuildTarget target) {
         if (Directory.Exists(Util.DataPath)) {
-            Directory.Delete(Util.DataPath, true);  // 删除数据 缓存中心 中转站
+            Directory.Delete(Util.DataPath, true);  // 删除数据 缓存中心 中转站 比如 window 在 C盘根目录下
         }
         string streamPath = Application.streamingAssetsPath;  // 删除数据 初始化中心
         if (Directory.Exists(streamPath)) {
@@ -98,15 +98,15 @@ public class Packager {
     }
 
     /// <summary>
-    /// 处理Lua代码包
+    /// 处理Lua代码包    --- 这里涉及的是针对两个特定目录下 .lua 格式的包，那么其他的JSON 怎么处理？这里好像没有涉及？
     /// </summary>
     static void HandleLuaBundle() {
-        string streamDir = Application.dataPath + "/" + AppConst.LuaTempDir;     //E:/TestCode/LuaFramework_UGUI_V2-master/Assets/Lua/
+        string streamDir = Application.dataPath + "/" + AppConst.LuaTempDir;     //E:/TestCode/LuaFramework_UGUI_V2-master/Assets/Lua/    这个是临时创建的文件，不知道有什么用 可能就是为了 转换后缀名。 。byte 最终被出包的也是这里的  XXX.LUA.BYTE 文件；
         Debug.Log("创建临时汇集目录 "+streamDir);
         if (!Directory.Exists(streamDir)) Directory.CreateDirectory(streamDir);  // 好像没有创建这个目录，找不到
       
        
-        string[] srcDirs = { CustomSettings.luaDir, CustomSettings.FrameworkPath + "/ToLua/Lua" }; 
+        string[] srcDirs = { CustomSettings.luaDir, CustomSettings.FrameworkPath + "/ToLua/Lua" };  // 这个2个目录 又是本质区别？
         Debug.Log("自定义具体项目lua脚本的目录 "+ srcDirs[0]);   // E:/TestCode/LuaFramework_UGUI_V2-master/Assets/LuaFramework/Lua/  
         Debug.Log("Tolua封装好的工具集或插件 "+ srcDirs[1]);  // E:/TestCode/LuaFramework_UGUI_V2-master/Assets/LuaFramework/ToLua/Lua 比如这里可以换成 xlua？
         for (int i = 0; i < srcDirs.Length; i++) {
@@ -126,22 +126,22 @@ public class Packager {
                     EncodeLuaFile(files[j], dest);
                 }    
             } else {
-                ToLuaMenu.CopyLuaBytesFiles(srcDirs[i], streamDir); // 谁拷贝到谁？  把前面的目录下的所有.lua文件 拷贝到 后面的目录下 并且加上 .byte
+                ToLuaMenu.CopyLuaBytesFiles(srcDirs[i], streamDir); // 谁拷贝到谁？  把前面的目录下的所有.lua文件 拷贝到 后面的目录下 并且加上 .byte; 把原来2个目录下.lua文件拷贝到 工程\lua\目录下
             }
         }
         string[] dirs = Directory.GetDirectories(streamDir, "*", SearchOption.AllDirectories); // 然后继续在新路径下 遍历所有的目录
         for (int i = 0; i < dirs.Length; i++) {
             Debug.Log(dirs[i]);      //比如： E:/TestCode/LuaFramework_UGUI_V2-master/Assets/Lua/3rd
             string name = dirs[i].Replace(streamDir, string.Empty); // 路径名字如果有空字符 处理掉，当然命名的时候不建议带有空字符的
-            name = name.Replace('\\', '_').Replace('/', '_'); // 处理所有的 目录分隔符 变成 _; 这个方便后面 解析导入lua
+            name = name.Replace('\\', '_').Replace('/', '_'); // 处理所有的 目录分隔符 变成 _; 这个方便后面 解析导入lua ； 所以不建议新建命名lua 文件的时候 使用下划线 _
             name = "lua/lua_" + name.ToLower() + AppConst.ExtName; // 起个打包的报名字，到时候方便 反向解析回来 如 "lua/lua_XXXX_YYY_BB.lua.bytes.unity3d"
 
             string path = "Assets" + dirs[i].Replace(Application.dataPath, "");
             Debug.Log("相对路劲path "+path);  // 得到的是相对路径 比如  Assets/Lua/3rd
             Debug.Log("可能出的 assetBundleName "+name);   //   name lua/lua_3rd.unity3d
-            AddBuildMap(name, "*.bytes", path); 
+            AddBuildMap(name, "*.bytes", path);  // 最终 搞到 bundle 打包的是  XXX.LUA.BYTE 文件； 
         }
-       AddBuildMap("lua/lua" + AppConst.ExtName, "*.bytes", "Assets/" + AppConst.LuaTempDir); // 这句话会不会重复功能？ 就多了2个文件 lua 和 lua.unity3d 不知道干啥用就是针对目录的随便打个包？
+       AddBuildMap("lua/lua" + AppConst.ExtName, "*.bytes", "Assets/" + AppConst.LuaTempDir); //  对应的改文件的出包设置
 
         //-------------------------------处理非Lua文件---------------------------------- 
         string luaPath = AppDataPath + "/StreamingAssets/lua/";
@@ -170,7 +170,8 @@ public class Packager {
         string resPath = AppDataPath + "/" + AppConst.AssetDir + "/";
         if (!Directory.Exists(resPath)) Directory.CreateDirectory(resPath);
 
-        AddBuildMap("prompt" + AppConst.ExtName, "*.prefab", "Assets/LuaFramework/Examples/Builds/Prompt");
+        AddBuildMap("prompt" + AppConst.ExtName, "*.prefab", "Assets/LuaFramework/Examples/Builds/Prompt"); // 指定出包的扩展名是  .unity3d  指定具体的哪个文件目录比如是Builds/Prompt 要被出包；并且删选下面的 .prefab文件；
+            // 最终出包的名字是 prompt.unity3d  他实际上是 Examples/Builds/Prompt 目录下的2个 预制件文件：PromptItem 和 PromptPanel
         AddBuildMap("message" + AppConst.ExtName, "*.prefab", "Assets/LuaFramework/Examples/Builds/Message");
 
         AddBuildMap("prompt_asset" + AppConst.ExtName, "*.png", "Assets/LuaFramework/Examples/Textures/Prompt");
@@ -232,10 +233,10 @@ public class Packager {
         for (int i = 0; i < files.Count; i++) {
             string file = files[i];
             string ext = Path.GetExtension(file);
-            if (file.EndsWith(".meta") || file.Contains(".DS_Store")) continue;
+            if (file.EndsWith(".meta") || file.Contains(".DS_Store")) continue; // 扩展名 是这2个 不处理
 
-            string md5 = Util.md5file(file);
-            string value = file.Replace(resPath, string.Empty);
+            string md5 = Util.md5file(file); // 对这个文件进行 MD5 验算
+            string value = file.Replace(resPath, string.Empty); //提取文件的相对路径，前面的绝对路径局部删掉 最后有可能是这样子 lua/lua_3rd_luabitop.unity3d|f58fbf8e11c50a7fd468d0fcd44627f5
             sw.WriteLine(value + "|" + md5);
         }
         sw.Close(); fs.Close();
@@ -249,15 +250,15 @@ public class Packager {
     }
 
     /// <summary>
-    /// 遍历目录及其子目录
+    /// 遍历目录及其子目录 并且忽略 。meta 文件的处理  全部存入 files 列表中
     /// </summary>
     static void Recursive(string path) {
         string[] names = Directory.GetFiles(path);
         string[] dirs = Directory.GetDirectories(path);
         foreach (string filename in names) {
-            string ext = Path.GetExtension(filename);
+            string ext = Path.GetExtension(filename); //返回指定路径文件的 扩展名
             if (ext.Equals(".meta")) continue;
-            files.Add(filename.Replace('\\', '/'));
+            files.Add(filename.Replace('\\', '/')); // 反斜杠 变成 斜杆， 文件系统 变成 网页系统
         }
         foreach (string dir in dirs) {
             paths.Add(dir.Replace('\\', '/'));

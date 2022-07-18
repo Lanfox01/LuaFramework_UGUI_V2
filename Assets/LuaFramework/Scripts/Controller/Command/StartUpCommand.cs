@@ -7,7 +7,7 @@ public class StartUpCommand : ControllerCommand {
     public override void Execute(IMessage message) {
         if (!Util.CheckEnvironment()) return;
 
-        GameObject gameMgr = GameObject.Find("GlobalGenerator"); // 全局生成器  好像是针对 全局 View的根目录？ 好像 没啥软用？
+        GameObject gameMgr = GameObject.Find("GlobalGenerator"); // 全局生成器  好像是针对 全局 View的根目录？ 好像 没啥软用？ 可以试着加一个这种对象；
         if (gameMgr != null) {
             AppView appView = gameMgr.AddComponent<AppView>();
         }

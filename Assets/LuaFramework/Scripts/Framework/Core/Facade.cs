@@ -36,7 +36,7 @@ public class Facade {
         if (m_controller != null) return;
         m_controller = Controller.Instance;
     }
-
+   // 为什么 要 再 controller 外面封装一层 facade ? 操作命令 直接 用 controller 不行吗？ 可能二者的定位层级不一样
     public virtual void RegisterCommand(string commandName, Type commandType) {
         m_controller.RegisterCommand(commandName, commandType);
     }

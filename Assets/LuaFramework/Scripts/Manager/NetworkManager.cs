@@ -8,7 +8,7 @@ namespace LuaFramework {
     public class NetworkManager : Manager {
         private SocketClient socket;
         static readonly object m_lockObject = new object();
-        static Queue<KeyValuePair<int, ByteBuffer>> mEvents = new Queue<KeyValuePair<int, ByteBuffer>>();
+        static Queue<KeyValuePair<int, ByteBuffer>> mEvents = new Queue<KeyValuePair<int, ByteBuffer>>(); // 这个到底啥事件 ？？
 
         SocketClient SocketClient {
             get { 
@@ -55,7 +55,7 @@ namespace LuaFramework {
             if (mEvents.Count > 0) {
                 while (mEvents.Count > 0) {
                     KeyValuePair<int, ByteBuffer> _event = mEvents.Dequeue();
-                    facade.SendMessageCommand(NotiConst.DISPATCH_MESSAGE, _event);
+                    facade.SendMessageCommand(NotiConst.DISPATCH_MESSAGE, _event); // 这里 会一直调用 事件处理中心？？？
                 }
             }
         }
