@@ -14,13 +14,13 @@ namespace LuaFramework {
 	}
 
 	public class GameObjectPool {
-        private int maxSize;
-		private int poolSize;
-		private string poolName;
-        private Transform poolRoot;
-        private GameObject poolObjectPrefab;
-        private Stack<GameObject> availableObjStack = new Stack<GameObject>();
-
+        private int maxSize; // 最大数量
+		private int poolSize; // 池子大小，一般在初始构造中就决定了，改变这个值可以一下子初始化多少个出来
+		private string poolName; // 池子名字
+        private Transform poolRoot; // 池子 根节点
+        private GameObject poolObjectPrefab; // 池子中对象的实例原型
+        private Stack<GameObject> availableObjStack = new Stack<GameObject>(); // 池子可能就是用这个 堆栈管理的 
+		// 预设某个类 在内存中存在的池子，并且设置这个池子的大小，以及预设了多少个实例对象，并且隐藏他们；
         public GameObjectPool(string poolName, GameObject poolObjectPrefab, int initCount, int maxSize, Transform pool) {
 			this.poolName = poolName;
 			this.poolSize = initCount;

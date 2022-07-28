@@ -12,6 +12,7 @@ public class Base : MonoBehaviour {
     private TimerManager m_TimerMgr;
     private ThreadManager m_ThreadMgr;
     private ObjectPoolManager m_ObjectPoolMgr;
+    private UnityCShapDebug m_UnityCShapDebug;
 
     /// <summary>
     /// 注册消息
@@ -102,6 +103,14 @@ public class Base : MonoBehaviour {
                 m_ObjectPoolMgr = facade.GetManager<ObjectPoolManager>(ManagerName.ObjectPool);
             }
             return m_ObjectPoolMgr;
+        }
+    }
+      protected UnityCShapDebug UnityCShapDebugMrg {
+        get {
+            if (m_UnityCShapDebug == null) {
+                m_UnityCShapDebug = facade.GetManager<UnityCShapDebug>(ManagerName.UnityCShapDebug);
+            }
+            return m_UnityCShapDebug;
         }
     }
 }

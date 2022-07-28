@@ -46,14 +46,14 @@ function Game.OnInitOK()
     this.test_pblua_func(); -- 测试 protobuf 的用法
     this.test_cjson_func(); --- 测试 json 用法
     this.test_pbc_func(); --- 测试 pbc 是什么玩意
-    this.test_lpeg_func();
-    this.test_sproto_func();
-    coroutine.start(this.test_coroutine); -- 测试 协程用法
+  --  this.test_lpeg_func();
+  --  this.test_sproto_func();
+  --  coroutine.start(this.test_coroutine); -- 测试 协程用法
 
-    CtrlManager.Init(); --- 这个控制器到底是什么玩意？
+    CtrlManager.Init(); --- 这个控制器到底是什么玩意？// 对应前面的界面 一一对应的 MVC模式，  一个viewpanel 对应一个 ctrl;所有的控制器放到一个地方统一管理
     local ctrl = CtrlManager.GetCtrl(CtrlNames.Prompt);
     if ctrl ~= nil and AppConst.ExampleMode == 1 then
-        ctrl:Awake();
+       -- ctrl:Awake(); --- ctrl 中可以控制生成 view + 绑定的 事件 -- 这里是创建实例化和事件绑定，推荐一个逻辑界面 对应一个类？而且是单例类？
     end
        
     logWarn('LuaFramework InitOK--->>>');

@@ -245,38 +245,50 @@ namespace LuaFramework {
         void OnInitialize() {
             LuaManager.InitStart(); //lua 虚拟机完美启动 接下来是可以 写 Lua 逻辑代码了
             LuaManager.DoFile("Logic/Game");         //加载Lua端游戏 模块
+            //网络初始化
             LuaManager.DoFile("Logic/Network");      //加载lua端网络模块  网络的使用初始化交到Lua端控制？
             NetManager.OnInit();                     //初始化网络   这里C#端控制了在写在lua端的网络监听；
+
             Util.CallMethod("Game", "OnInitOK");     //初始化完成  调用的应该是 "Logic/Game" 里面的OnInitOk 方法 这里有写死了一些 服务端的IP 和端口信息；
 
             initialize = true;
+            /*
+              以下这段是测试 缓冲池模块的功能，如果游戏没有涉及大量的重复生产，可以不考虑，比如子弹之类的 
+            */ 
 
-            //类对象池测试
-            var classObjPool = ObjPoolManager.CreatePool<TestObjectClass>(OnPoolGetElement, OnPoolPushElement);
-            //方法1
-            //objPool.Release(new TestObjectClass("abcd", 100, 200f));
-            //var testObj1 = objPool.Get();
+            // //类对象池测试 就是一般类的创建？？  一般情况 生成一次 单例 不建议多次调用？ 动词调用会不会被覆盖？
+            // var classObjPool = ObjPoolManager.CreatePool<TestObjectClass>(OnPoolGetElement, OnPoolPushElement);// 什么意思？？创建之后，注册到 对象池
+           
+            // //方法1
+            // //objPool.Release(new TestObjectClass("abcd", 100, 200f));
+            // //var testObj1 = objPool.Get();
 
-            //方法2
-            ObjPoolManager.Release<TestObjectClass>(new TestObjectClass("abcd", 100, 200f));
-            var testObj1 = ObjPoolManager.Get<TestObjectClass>();
+            // //方法2
+            // ObjPoolManager.Release<TestObjectClass>(new TestObjectClass("abcd", 100, 200f));// 这个释放 为什么还要 new ?  会带动释放的绑定事件
+            // // 理解下这里的释放，就是把这个对象预先压入缓存池，并且置顶第一位 下次再去Get 获取的时候 就会取到它
+            // // 一般来说  ObjPoolManager.CreatePool 和 ObjPoolManager.Release 都是成双 出现的
+            //  UnityCShapDebugMrg.Dbug("某种类型的对象池  Release classObjPool  countAll:"+ classObjPool.countInactive); 
+           
+            // var testObj1 = ObjPoolManager.Get<TestObjectClass>(); //这里从对象池里获取某一个对象， 会触发 OnPoolGetElement 这其实就是取到上面那个类实例
+         
+            // Debugger.Log("TestObjectClass--->>>" + testObj1.ToString());
+            // UnityCShapDebugMrg.Dbug("某种类型的对象池  Release classObjPool  countAll:"+ classObjPool.countInactive); //上面有一个 Get 了，为什么这里还是0？因为这些属性仅正对游戏对象实例有用
 
-            Debugger.Log("TestObjectClass--->>>" + testObj1.ToString());
+            // //游戏对象池测试  游戏对象类的创建？ 显然创建实例对象是没有存在 绑定事件这种说法的
+            // var prefab = Resources.Load("TestGameObjectPrefab", typeof(GameObject)) as GameObject; // 这个加载东西就是一个空对象啊，示意可以其他的？
+            // var gameObjPool = ObjPoolManager.CreatePool("TestGameObject", 5, 10, prefab); // 这里是根据 池子名字设置的 查询的；并且规定池子是存放GameObject类型 
 
-            //游戏对象池测试
-            var prefab = Resources.Load("TestGameObjectPrefab", typeof(GameObject)) as GameObject;
-            var gameObjPool = ObjPoolManager.CreatePool("TestGameObject", 5, 10, prefab);
+            // var gameObj = Instantiate(prefab) as GameObject; // 这里为什么不从池子里取，直接这样子实例化的话初始一遍？然后在通过 Release 存入缓冲池
+            // gameObj.name = "TestGameObject_01";
+            // gameObj.transform.localScale = Vector3.one;
+            // gameObj.transform.localPosition = Vector3.zero;
 
-            var gameObj = Instantiate(prefab) as GameObject;
-            gameObj.name = "TestGameObject_01";
-            gameObj.transform.localScale = Vector3.one;
-            gameObj.transform.localPosition = Vector3.zero;
-
-            ObjPoolManager.Release("TestGameObject", gameObj);
-            var backObj = ObjPoolManager.Get("TestGameObject");
-            backObj.transform.SetParent(null);
-
-            Debug.Log("TestGameObject--->>>" + backObj);
+            // ObjPoolManager.Release("TestGameObject", gameObj); //示范掉当前，放回一个位置， 正常的话跟上面  ObjPoolManager.CreatePool 成对出现，那么上面的话还有4个位置？
+            // // 这个 release 不是说把整个池子 撤销掉； 那如果想撤销掉怎么办？
+            // var backObj = ObjPoolManager.Get("TestGameObject"); //  然后用的时候 继续拿出来用，此时又变成从缓冲池拿出来，这个会不会太复杂
+            // backObj.transform.SetParent(null);
+            // UnityCShapDebugMrg.Dbug("获取缓存池中的下一个对象："+ gameObjPool.NextAvailableObject().name);
+            // Debug.Log("TestGameObject--->>>" + backObj); // TestGameObject_01 这里的代码不是最后一句日志； 还有 lua 中创建的 Pannel Awake下一帧会有提示；
         }
 
         /// <summary>
@@ -284,7 +296,8 @@ namespace LuaFramework {
         /// </summary>
         /// <param name="obj"></param>
         void OnPoolGetElement(TestObjectClass obj) {
-            Debug.Log("OnPoolGetElement--->>>" + obj);
+            //Debug.Log("OnPoolGetElement--->>>" + obj);
+            UnityCShapDebugMrg.Dbug("当从池子里面获取时",UnityCShapDebug.InfoLevel.worm);
         }
 
         /// <summary>
@@ -292,7 +305,8 @@ namespace LuaFramework {
         /// </summary>
         /// <param name="obj"></param>
         void OnPoolPushElement(TestObjectClass obj) {
-            Debug.Log("OnPoolPushElement--->>>" + obj);
+             //Debug.Log("OnPoolPushElement--->>>" + obj);
+             UnityCShapDebugMrg.Dbug("当放回池子里面时",UnityCShapDebug.InfoLevel.worm);
         }
 
         /// <summary>

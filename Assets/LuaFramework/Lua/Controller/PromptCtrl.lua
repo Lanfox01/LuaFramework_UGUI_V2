@@ -36,7 +36,7 @@ function PromptCtrl.OnCreate(obj)
 	logWarn("Start lua--->>"..gameObject.name);
 
 	prompt:AddClick(PromptPanel.btnOpen, this.OnClick);
-	resMgr:LoadPrefab('prompt', { 'PromptItem' }, this.InitPanel);
+	resMgr:LoadPrefab('prompt', { 'PromptItem' }, this.InitPanel); --- resourcemanager
 end
 
 --初始化面板--

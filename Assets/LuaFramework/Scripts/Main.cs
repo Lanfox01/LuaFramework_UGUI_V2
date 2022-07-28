@@ -15,7 +15,7 @@ namespace LuaFramework {
 
 /*新手步骤： 在 特定的目录下 LuaFramework/Lua/ 添加修改代码，如果新建的 .lua代码不能命名不能有 _ 下划线；
  *  菜单工具lua/  Generator 生成代Lua 中间代码；  
- *  菜单工具luaFramework 生成对应平台的  Resources
+ *  菜单工具luaFramework 生成对应平台的 比如 android/Resources
  *
  *文件的生成过程， LuaFramework/Lua/ 自定义lua文件，---> 工程/lua 临时文件，分别处理.lua和非.lua文件格式， 前者后面加 xxx.lua.byte; --->streamAsset 目录文件；  然后把这些文件 弄到某个资源服务器上
  * 运行的时候： 1  第一次安装运行 直接从 StreamAsset中拷贝过来， 2 之后 会检查更新， 再次验证，从 服务器地址上进行验证比对；   1和2 都会下载到 运行平台的 数据缓存中心；
